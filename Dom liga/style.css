@@ -1,0 +1,283 @@
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Roboto", sans-serif;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+
+  font-size: 16px;
+  background-color: #2c3e50;
+  cursor: default;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  background-color: #ecf0f1;
+  padding: 32px 28px;
+  cursor: default;
+  user-select: none;
+
+  border: 2px solid black;
+  border-radius: 10px;
+}
+
+.title-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.title {
+  margin: 0;
+
+  font-size: 32px;
+  color: #444;
+
+  user-select: none;
+  cursor: default;
+}
+
+.title-icon {
+  height: 40px;
+  width: auto;
+}
+
+.container .input-box {
+  width: 460px;
+  height: 30px;
+  margin: 18px 0;
+}
+
+.container .input-box input {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+
+  text-align: left;
+
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: text;
+}
+
+.container .input-box input::placeholder {
+  color: #ccc;
+  font-weight: 400;
+}
+
+.btn {
+  width: 200px;
+  background-color: #1abc9c;
+  padding: 12px 0;
+
+  font-size: 18px;
+  text-align: center;
+
+  border-radius: 8px;
+  border: 2px solid #444;
+  margin-top: 20px;
+
+  transition-duration: 0.3s;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background-color: #16a085;
+  color: #ecf0f1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.hidden {
+  display: none;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 500px;
+  margin: 20px auto;
+  gap: 15px;
+  user-select: none;
+}
+
+.slider-wrapper {
+  width: 400px;
+  overflow: hidden;
+  border: 2px solid #16a085;
+  border-radius: 12px;
+  background-color: #f8f9fa;
+  padding: 15px 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.teams-slider {
+  display: flex;
+  transition: transform 0.4s ease;
+  gap: 25px;
+  padding: 0 10px;
+}
+
+.team-select {
+  margin-top: 30px;
+  text-align: center;
+  background-color: #ecf0f1;
+  border-radius: 10px;
+  padding: 25px;
+  border: 2px solid black;
+  max-width: 550px;
+}
+
+.team-select h3 {
+  color: #2c3e50;
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.team-icons {
+  height: 70px;
+  width: auto;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 5px;
+  border-radius: 10px;
+}
+
+.team-icons:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.team-icons.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(100%);
+  transform: none;
+  box-shadow: none;
+}
+
+.team-icons.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.slider-btn {
+  background-color: #1abc9c;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #fff;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider-btn:hover {
+  transform: scale(1.1);
+  background-color: #16a085;
+}
+
+.team-icons.selected {
+  border: 3px solid #1abc9c;
+  border-radius: 10px;
+  padding: 4px;
+  background-color: #e8f8f5;
+  box-shadow: 0 0 10px rgba(26, 188, 156, 0.6);
+}
+
+.confirm-selection {
+  width: 200px;
+  background-color: #1abc9c;
+  padding: 12px 0;
+  font-size: 18px;
+  text-align: center;
+  border-radius: 8px;
+  border: 2px solid #444;
+  margin: 25px auto 0;
+  transition-duration: 0.3s;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 500;
+  display: block;
+}
+
+.confirm-selection:hover {
+  background-color: #16a085;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.confirmation {
+  margin-top: 30px;
+  text-align: center;
+  user-select: none;
+  background-color: #ecf0f1;
+  border-radius: 10px;
+  padding: 30px;
+  border: 2px solid black;
+  max-width: 460px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.confirmation h3 {
+  color: #2c3e50;
+  font-size: 28px;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.confirmation p {
+  font-size: 18px;
+  margin: 15px 0;
+  color: #34495e;
+}
+
+.confirmation strong {
+  color: #16a085;
+  margin-right: 10px;
+}
+
+.team-logo-container {
+  margin: 20px auto;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-logo {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.success-icon {
+  font-size: 24px;
+  color: #16a085;
+  margin-right: 10px;
+}
+
+h3 {
+  user-select: none;
+}

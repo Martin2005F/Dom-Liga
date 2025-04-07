@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="images/icons/Football.jpg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <title>Dom Liga Prijava⚽</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="title-wrap">
+        <h2 class="title">
+          Prijavi se u ligu<img
+            class="title-icon"
+            src="images/icons/Footbal-title.png"
+          />
+        </h2>
+      </div>
+      <div class="input-box">
+        <input type="text" placeholder="ime" required />
+      </div>
+
+      <div class="input-box">
+        <input type="text" placeholder="prezime" required />
+      </div>
+
+      <div class="input-box">
+        <input type="text" placeholder="nickname" required />
+      </div>
+
+      <button class="btn">Prijavi se</button>
+    </div>
+
+    <div class="team-select hidden">
+      <h3>Odaberi svoj tim</h3>
+      <div class="slider-container">
+        <button class="slider-btn left">&larr;</button>
+
+        <div class="slider-wrapper">
+          <div class="teams-slider">
+            <img
+              class="team-icons"
+              src="/images/football_teams/Atletico-Madrid-Logo.png"
+              alt="Atletico Madrid"
+            />
+            <img
+              class="team-icons"
+              src="/images/football_teams/Real_Madrid_CF.svg.png"
+              alt="Real Madrid"
+            />
+            <img
+              class="team-icons"
+              src="/images/football_teams/LFC.png"
+              alt="Liverpool"
+            />
+            <img
+              class="team-icons"
+              src="/images/football_teams/download.png"
+              alt="Inter"
+            />
+            <img
+              class="team-icons"
+              src="/images/football_teams/download_1.png"
+              alt="Bayern Munich"
+            />
+            <img
+              class="team-icons"
+              src="/images/football_teams/download_2.png"
+              alt="PSG"
+            />
+            <img
+              class="team-icons"
+              src="/images/football_teams/download_3.png"
+              alt="Bayer Leverkusen"
+            />
+            <img
+              class="team-icons"
+              src="/images/football_teams/images.png"
+              alt="Manchester City"
+            />
+            <img
+              class="team-icons"
+              src="/images/football_teams/images_1.png"
+              alt="Barcelona"
+            />
+            <img
+              class="team-icons"
+              src="/images/football_teams/download_4.png"
+              alt="Arsenal"
+            />
+            <img
+              class="team-icons"
+              src="/images/football_teams/Aston-Villa-Logo.png"
+              alt="Aston Vila"
+            />
+          </div>
+        </div>
+
+        <button class="slider-btn right">&rarr;</button>
+      </div>
+      <button class="confirm-selection">Potvrdi odabir</button>
+    </div>
+
+    <div class="confirmation hidden">
+      <h3><span class="success-icon">✓</span>Prijava uspješna</h3>
+      <div class="team-logo-container">
+        <img class="team-logo" id="conf-logo" src="" alt="Team logo" />
+      </div>
+      <p><strong>Ime:</strong> <span id="conf-ime"></span></p>
+      <p><strong>Prezime:</strong> <span id="conf-prezime"></span></p>
+      <p><strong>Nickname:</strong> <span id="conf-nickname"></span></p>
+      <p><strong>Klub:</strong> <span id="conf-klub"></span></p>
+    </div>
+
+    <script src="scripts.js"></script>
+  </body>
+</html>
