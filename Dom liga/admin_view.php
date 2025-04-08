@@ -1,6 +1,6 @@
 <?php
 // Simple password protection
-$password = "domliga2025"; // Promijeni ovo na željenu lozinku
+$password = "DomskaLiga"; 
 $authenticated = false;
 
 if (isset($_POST['password']) && $_POST['password'] === $password) {

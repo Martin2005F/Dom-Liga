@@ -1,12 +1,21 @@
 <?php
-// Set proper content type header
 header('Content-Type: application/json');
+// InfinityFree DB config
+$host = "sql312.infinityfree.com"; 
+$dbname = "if0_38700771_date"; 
+$username = "if0_38700771";       
+$password = "DomskaLiga";       
 
-// Get the data from the POST request
-$userData = json_decode(file_get_contents('php://input'), true);
+// Get user data
+
+
+// Get the JSON data from the request
+$jsonData = file_get_contents('php://input');
+$userData = json_decode($jsonData, true);
 
 // Validate required fields
-if (!isset($userData['ime']) || !isset($userData['prezime']) || !isset($userData['nickname']) || !isset($userData['club'])) {
+if (!isset($userData['ime']) || !isset($userData['prezime']) || 
+    !isset($userData['nickname']) || !isset($userData['club'])) {
     echo json_encode(['success' => false, 'message' => 'Missing required fields']);
     exit;
 }
@@ -16,56 +25,45 @@ $ime = htmlspecialchars($userData['ime']);
 $prezime = htmlspecialchars($userData['prezime']);
 $nickname = htmlspecialchars($userData['nickname']);
 $club = htmlspecialchars($userData['club']);
-$timestamp = date('Y-m-d H:i:s');
+$email = isset($userData['email']) ? htmlspecialchars($userData['email']) : '';
 
-// Path to data file
-$dataFile = 'domliga_users.json';
-
-// Read existing data
-$existingData = [];
-if (file_exists($dataFile)) {
-    $jsonData = file_get_contents($dataFile);
-    if ($jsonData) {
-        $existingData = json_decode($jsonData, true) ?: [];
-    }
-}
-
-// Check for duplicate nickname
-foreach ($existingData as $user) {
-    if (strtolower($user['nickname']) === strtolower($nickname)) {
-        echo json_encode(['success' => false, 'message' => 'Nickname already exists']);
+try {
+    // Create PDO connection
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // Check for duplicates (nickname)
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE LOWER(nickname) = LOWER(?)");
+    $stmt->execute([strtolower($nickname)]);
+    $nicknameExists = $stmt->fetchColumn() > 0;
+    
+    if ($nicknameExists) {
+        echo json_encode(['success' => false, 'message' => 'Nickname već postoji']);
         exit;
     }
-}
-
-// Check for duplicate club
-foreach ($existingData as $user) {
-    if ($user['club'] === $club) {
-        echo json_encode(['success' => false, 'message' => 'Club already taken']);
+    
+    // Check for duplicates (club)
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE LOWER(club) = LOWER(?)");
+    $stmt->execute([strtolower($club)]);
+    $clubExists = $stmt->fetchColumn() > 0;
+    
+    if ($clubExists) {
+        echo json_encode(['success' => false, 'message' => 'Klub je već odabran']);
         exit;
     }
-}
-
-// Add new user
-$newUser = [
-    'ime' => $ime,
-    'prezime' => $prezime,
-    'nickname' => $nickname,
-    'club' => $club,
-    'timestamp' => $timestamp
-];
-$existingData[] = $newUser;
-
-// Save data back to file
-$success = file_put_contents($dataFile, json_encode($existingData, JSON_PRETTY_PRINT));
-
-if ($success) {
-    // Also append to text file for easy viewing
-    $textFile = 'domliga_players.txt';
-    $playerData = "[$timestamp] $ime $prezime ($nickname) - $club\n";
-    file_put_contents($textFile, $playerData, FILE_APPEND);
+    
+    // Prepare SQL statement based on whether email is provided
+    if (!empty($email)) {
+        $stmt = $pdo->prepare("INSERT INTO users (ime, prezime, nickname, club, email, timestamp) VALUES (?, ?, ?, ?, ?, NOW())");
+        $stmt->execute([$ime, $prezime, $nickname, $club, $email]);
+    } else {
+        $stmt = $pdo->prepare("INSERT INTO users (ime, prezime, nickname, club, timestamp) VALUES (?, ?, ?, ?, NOW())");
+        $stmt->execute([$ime, $prezime, $nickname, $club]);
+    }
     
     echo json_encode(['success' => true, 'message' => 'User registered successfully']);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Failed to save data']);
+    
+} catch (PDOException $e) {
+    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
+?>

@@ -14,7 +14,7 @@ body {
   min-height: 100vh;
 
   font-size: 16px;
-  background-color: #2c3e50;
+  background-color: #0d1117;
   cursor: default;
 }
 
@@ -24,7 +24,7 @@ body {
   align-items: center;
   flex-direction: column;
 
-  background-color: #ecf0f1;
+  background-color: #151b23;
   padding: 32px 28px;
   cursor: default;
   user-select: none;
@@ -45,7 +45,7 @@ body {
   margin: 0;
 
   font-size: 32px;
-  color: #444;
+  color: #e6edf3;
 
   user-select: none;
   cursor: default;
@@ -69,15 +69,39 @@ body {
 
   text-align: left;
 
-  border: 1px solid #ccc;
+  background-color: #21262d;
+  border: 1px solid #30363d;
+
+  color: #e6edf3;
+
   border-radius: 6px;
   font-size: 16px;
   cursor: text;
 }
 
 .container .input-box input::placeholder {
-  color: #ccc;
+  color: #21262d;
   font-weight: 400;
+}
+
+.container .input-box input:focus {
+  border-color: #1abc9c;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.3);
+}
+
+.error-message {
+  color: #f85149;
+  font-size: 12px;
+  margin-top: 5px;
+  display: block;
+  text-align: left;
+  padding-left: 5px;
+}
+
+.input-box input.error {
+  border-color: #f85149;
+  background-color: rgba(248, 81, 73, 0.1);
 }
 
 .btn {
@@ -280,4 +304,128 @@ body {
 
 h3 {
   user-select: none;
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+
+@media (max-width: 768px) {
+  .container {
+    width: 90%;
+    padding: 20px 16px;
+  }
+
+  .title {
+    font-size: 24px;
+    text-align: center;
+  }
+
+  .title-icon {
+    height: 30px;
+  }
+
+  .container .input-box {
+    width: 100%;
+    height: auto;
+  }
+
+  .container .input-box input {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .btn,
+  .confirm-selection {
+    width: 100%;
+    font-size: 16px;
+    padding: 10px 0;
+  }
+
+  .slider-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .slider-wrapper {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .teams-slider {
+    gap: 15px;
+    padding: 0 5px;
+  }
+
+  .team-select {
+    max-width: 100%;
+    padding: 20px;
+  }
+
+  .team-select h3 {
+    font-size: 20px;
+  }
+
+  .team-icons {
+    height: 60px;
+  }
+
+  .confirmation {
+    max-width: 100%;
+    padding: 20px;
+  }
+
+  .confirmation h3 {
+    font-size: 22px;
+  }
+
+  .confirmation p {
+    font-size: 16px;
+  }
+
+  .team-logo-container {
+    width: 80px;
+    height: 80px;
+  }
+
+  .slider-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 20px;
+  }
+
+  .btn,
+  .confirm-selection {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .team-select h3 {
+    font-size: 18px;
+  }
+
+  .confirmation h3 {
+    font-size: 20px;
+  }
+
+  .confirmation p {
+    font-size: 15px;
+  }
+
+  .slider-wrapper {
+    padding: 8px;
+  }
+
+  .team-icons {
+    height: 50px;
+  }
+
+  .team-logo-container {
+    width: 60px;
+    height: 60px;
+  }
 }

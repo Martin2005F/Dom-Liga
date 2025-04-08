@@ -1,71 +1,42 @@
 <?php
-// Set proper content type header
 header('Content-Type: application/json');
 
-// Get the data from the POST request
-$userData = json_decode(file_get_contents('php://input'), true);
+// InfinityFree DB config
+$host = "sql312.infinityfree.com";
+$dbname = "if0_38700771_date";
+$username = "if0_38700771";
+$password = "DomskaLiga";
 
-// Validate required fields
-if (!isset($userData['ime']) || !isset($userData['prezime']) || !isset($userData['nickname']) || !isset($userData['club'])) {
-    echo json_encode(['success' => false, 'message' => 'Missing required fields']);
-    exit;
-}
+header('Content-Type: application/json');
 
-// Sanitize input
-$ime = htmlspecialchars($userData['ime']);
-$prezime = htmlspecialchars($userData['prezime']);
-$nickname = htmlspecialchars($userData['nickname']);
-$club = htmlspecialchars($userData['club']);
-$timestamp = date('Y-m-d H:i:s');
-
-// Path to data file
-$dataFile = 'domliga_users.json';
-
-// Read existing data
-$existingData = [];
-if (file_exists($dataFile)) {
-    $jsonData = file_get_contents($dataFile);
-    if ($jsonData) {
-        $existingData = json_decode($jsonData, true) ?: [];
-    }
-}
-
-// Check for duplicate nickname
-foreach ($existingData as $user) {
-    if (strtolower($user['nickname']) === strtolower($nickname)) {
-        echo json_encode(['success' => false, 'message' => 'Nickname already exists']);
-        exit;
-    }
-}
-
-// Check for duplicate club
-foreach ($existingData as $user) {
-    if ($user['club'] === $club) {
-        echo json_encode(['success' => false, 'message' => 'Club already taken']);
-        exit;
-    }
-}
-
-// Add new user
-$newUser = [
-    'ime' => $ime,
-    'prezime' => $prezime,
-    'nickname' => $nickname,
-    'club' => $club,
-    'timestamp' => $timestamp
-];
-$existingData[] = $newUser;
-
-// Save data back to file
-$success = file_put_contents($dataFile, json_encode($existingData, JSON_PRETTY_PRINT));
-
-if ($success) {
-    // Also append to text file for easy viewing
-    $textFile = 'domliga_players.txt';
-    $playerData = "[$timestamp] $ime $prezime ($nickname) - $club\n";
-    file_put_contents($textFile, $playerData, FILE_APPEND);
+try {
+    // Create PDO connection
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    echo json_encode(['success' => true, 'message' => 'User registered successfully']);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Failed to save data']);
+    // Get existing nicknames and clubs
+    $stmt = $pdo->query("SELECT nickname, club FROM users");
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $nicknames = [];
+    $clubs = [];
+    
+    foreach ($result as $row) {
+        $nicknames[] = $row['nickname'];
+        $clubs[] = $row['club'];
+    }
+    
+    echo json_encode([
+        'success' => true,
+        'nicknames' => $nicknames,
+        'clubs' => $clubs
+    ]);
+    
+} catch (PDOException $e) {
+    // Return error message
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Database error: ' . $e->getMessage()
+    ]);
 }
+?>
