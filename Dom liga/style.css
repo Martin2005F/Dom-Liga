@@ -80,7 +80,7 @@ body {
 }
 
 .container .input-box input::placeholder {
-  color: #21262d;
+  color: #8b949e;
   font-weight: 400;
 }
 
@@ -161,7 +161,7 @@ body {
 .team-select {
   margin-top: 30px;
   text-align: center;
-  background-color: #ecf0f1;
+  background-color: #151b23;
   border-radius: 10px;
   padding: 25px;
   border: 2px solid black;
@@ -169,7 +169,7 @@ body {
 }
 
 .team-select h3 {
-  color: #2c3e50;
+  color: #e6edf3;
   font-size: 24px;
   margin-bottom: 15px;
 }
@@ -202,24 +202,22 @@ body {
 }
 
 .slider-btn {
-  background-color: #1abc9c;
+  background: none;
   border: none;
-  font-size: 22px;
+  font-size: 28px;
   cursor: pointer;
-  color: #fff;
-  transition: all 0.2s ease;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  color: #ffffff;
+  width: auto;
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 5px;
 }
 
 .slider-btn:hover {
-  transform: scale(1.1);
-  background-color: #16a085;
+  transform: scale(1.2);
+  color: #1abc9c;
 }
 
 .team-icons.selected {
