@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const confLogo = document.getElementById("conf-logo");
 
   const slider = document.querySelector(".teams-slider");
+  const sliderWrapper = document.querySelector(".slider-wrapper");
   const leftBtn = document.querySelector(".slider-btn.left");
   const rightBtn = document.querySelector(".slider-btn.right");
   const teamIcons = document.querySelectorAll(".team-icons");
@@ -34,6 +35,44 @@ document.addEventListener("DOMContentLoaded", () => {
   // Enable buttons by default (we'll handle validation separately)
   if (prijaviBtn) prijaviBtn.disabled = false;
   if (confirmBtn) confirmBtn.disabled = false;
+
+  // Function to apply shake effect
+  function applyShakeEffect(element) {
+    // Add error class which contains the shake animation
+    element.classList.add("error");
+
+    // Remove the class after animation completes to allow it to be triggered again
+    setTimeout(() => {
+      element.classList.remove("error");
+    }, 500); // Animation duration (300ms) + a little extra time
+  }
+
+  // Function to display error message
+  function showError(input, message) {
+    applyShakeEffect(input);
+
+    // Create or update error message
+    let errorMsg = input.parentElement.querySelector(".error-message");
+    if (!errorMsg) {
+      errorMsg = document.createElement("div");
+      errorMsg.className = "error-message";
+      input.parentElement.appendChild(errorMsg);
+    }
+    errorMsg.textContent = message;
+
+    input.style.borderColor = "red";
+    input.style.backgroundColor = "#21262d";
+    input.focus();
+  }
+
+  // Function to clear error message
+  function clearError(input) {
+    const errorMsg = input.parentElement.querySelector(".error-message");
+    if (errorMsg) errorMsg.remove();
+
+    input.style.borderColor = "";
+    input.style.backgroundColor = "";
+  }
 
   // Email validation function
   function isValidEmail(email) {
@@ -63,20 +102,14 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         } else {
           console.error("Error loading data:", data.message);
-          // Show fallback message
-          alert(
-            "Došlo je do greške pri učitavanju podataka. Neke funkcije možda neće raditi ispravno."
-          );
+          // Set dataLoaded to true so UI functions normally despite error
+          dataLoaded = true;
         }
       })
       .catch((error) => {
         console.error("Error loading data:", error);
         // In case of error, set dataLoaded to true anyway so UI is functional
         dataLoaded = true;
-        // Fallback by allowing the form to be used
-        alert(
-          "Nije moguće povezati se s bazom podataka. Registracija će biti omogućena, ali neki klubovi možda već neće biti dostupni."
-        );
       });
   }
 
@@ -137,6 +170,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ========== SLIDER MOVEMENT ==========
   function updateSlider() {
+    const maxIndex = Math.max(0, slider.children.length - visibleItems);
+    if (currentIndex > maxIndex) currentIndex = maxIndex;
+
     const offset = currentIndex * (itemWidth + 20);
     slider.style.transform = `translateX(-${offset}px)`;
   }
@@ -156,13 +192,100 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // ========== TOUCH SLIDER FOR MOBILE ==========
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let isDragging = false;
+  let startTransform = 0;
+  let currentTransform = 0;
+
+  // Add touch event listeners for mobile
+  if (sliderWrapper) {
+    // Touch start
+    sliderWrapper.addEventListener(
+      "touchstart",
+      function (e) {
+        touchStartX = e.touches[0].clientX;
+        isDragging = true;
+        startTransform = currentIndex * (itemWidth + 20);
+        currentTransform = startTransform;
+
+        // Disable transitions during manual dragging for smoother feel
+        slider.style.transition = "none";
+      },
+      { passive: true }
+    );
+
+    // Touch move
+    sliderWrapper.addEventListener(
+      "touchmove",
+      function (e) {
+        if (!isDragging) return;
+
+        const touchCurrentX = e.touches[0].clientX;
+        const diff = touchStartX - touchCurrentX;
+
+        // Calculate new transform position but keep within bounds
+        currentTransform = startTransform + diff;
+
+        // Apply bounds
+        const maxTransform =
+          Math.max(0, slider.children.length - visibleItems) * (itemWidth + 20);
+        if (currentTransform < 0) currentTransform = 0;
+        if (currentTransform > maxTransform) currentTransform = maxTransform;
+
+        // Apply the transform
+        slider.style.transform = `translateX(-${currentTransform}px)`;
+      },
+      { passive: true }
+    );
+
+    // Touch end
+    sliderWrapper.addEventListener(
+      "touchend",
+      function (e) {
+        if (!isDragging) return;
+        isDragging = false;
+
+        // Re-enable smooth transitions
+        slider.style.transition = "transform 0.4s ease";
+
+        // Calculate the nearest index based on current position
+        currentIndex = Math.round(currentTransform / (itemWidth + 20));
+
+        // Ensure index is within bounds
+        const maxIndex = Math.max(0, slider.children.length - visibleItems);
+        if (currentIndex < 0) currentIndex = 0;
+        if (currentIndex > maxIndex) currentIndex = maxIndex;
+
+        // Update slider to snap to nearest position
+        updateSlider();
+      },
+      { passive: true }
+    );
+  }
+
   // ========== TEAM SELECTION ==========
   teamIcons.forEach((icon) => {
     icon.addEventListener("click", () => {
       if (icon.classList.contains("disabled")) {
-        alert("Ovaj klub je već odabran. Molimo odaberite drugi.");
+        // Show error message instead of alert
+        let errorMsg = teamSelect.querySelector(".team-error-message");
+        if (!errorMsg) {
+          errorMsg = document.createElement("div");
+          errorMsg.className = "error-message team-error-message";
+          errorMsg.style.margin = "10px 0";
+          teamSelect.insertBefore(errorMsg, confirmBtn);
+        }
+        errorMsg.textContent =
+          "Ovaj klub je već odabran. Molimo odaberite drugi.";
+        applyShakeEffect(icon);
         return;
       }
+
+      // Clear any previous error message
+      const errorMsg = teamSelect.querySelector(".team-error-message");
+      if (errorMsg) errorMsg.remove();
 
       teamIcons.forEach((el) => el.classList.remove("selected"));
       icon.classList.add("selected");
@@ -178,28 +301,9 @@ document.addEventListener("DOMContentLoaded", () => {
     emailInput.addEventListener("blur", function () {
       const email = this.value.trim();
       if (email && !isValidEmail(email)) {
-        this.style.borderColor = "red";
-        this.style.backgroundColor = "#21262d";
-
-        // Add error message
-        let errorMsg = this.parentElement.querySelector(".error-message");
-        if (!errorMsg) {
-          errorMsg = document.createElement("div");
-          errorMsg.className = "error-message";
-          errorMsg.style.color = "red";
-          errorMsg.style.fontSize = "12px";
-          errorMsg.style.marginTop = "5px";
-          this.parentElement.appendChild(errorMsg);
-        }
-        errorMsg.textContent =
-          "Unesite ispravnu email adresu (npr. ime@domena.com)";
+        showError(this, "Unesite ispravnu email adresu (npr. ime@domena.com)");
       } else {
-        this.style.borderColor = "";
-        this.style.backgroundColor = "";
-
-        // Remove error message if exists
-        const errorMsg = this.parentElement.querySelector(".error-message");
-        if (errorMsg) errorMsg.remove();
+        clearError(this);
       }
     });
 
@@ -212,6 +316,12 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         this.style.borderColor = "";
         this.style.backgroundColor = "";
+
+        // Clear error message if the email becomes valid
+        const errorMsg = this.parentElement.querySelector(".error-message");
+        if (errorMsg && isValidEmail(email)) {
+          errorMsg.remove();
+        }
       }
     });
   }
@@ -219,116 +329,117 @@ document.addEventListener("DOMContentLoaded", () => {
   // ========== "PRIJAVI SE" BUTTON ==========
   if (prijaviBtn) {
     prijaviBtn.addEventListener("click", () => {
-      // Even if data isn't loaded, we still allow registration but with warnings
-      if (!dataLoaded) {
-        const proceed = confirm(
-          "Podaci se još učitavaju ili nije moguće povezati se s bazom podataka. Želite li nastaviti?"
-        );
-        if (!proceed) return;
-      }
+      // Clear any previous error messages
+      document.querySelectorAll(".error-message").forEach((msg) => {
+        if (!msg.classList.contains("team-error-message")) {
+          msg.remove();
+        }
+      });
 
-      const ime = imeInput.value.trim();
-      const prezime = prezimeInput.value.trim();
-      const nickname = nicknameInput.value.trim();
-      const email = emailInput ? emailInput.value.trim() : "";
-
-      // Form validation
-      if (!ime) {
-        alert("Molimo unesite vaše ime.");
-        imeInput.focus();
-        return;
-      }
-
-      if (!prezime) {
-        alert("Molimo unesite vaše prezime.");
-        prezimeInput.focus();
-        return;
-      }
-
-      if (!nickname) {
-        alert("Molimo unesite vaš nickname.");
-        nicknameInput.focus();
-        return;
-      }
-
-      if (emailInput && !email) {
-        alert("Molimo unesite vašu email adresu.");
-        emailInput.focus();
-        return;
-      }
-
-      if (emailInput && !isValidEmail(email)) {
-        alert("Molimo unesite valjanu email adresu (npr. ime@domena.com).");
-        emailInput.focus();
-        return;
-      }
-
-      // Check if nickname is already taken (if we have data)
-      if (dataLoaded && registeredNicknames.includes(nickname.toLowerCase())) {
-        alert("Ovaj nickname je već zauzet! Odaberi drugi.");
-        nicknameInput.value = "";
-        nicknameInput.focus();
-        return;
-      }
-
-      // Refresh data one more time before proceeding
-      fetch("get_existing_data.php")
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((data) => {
-          if (data.success) {
-            registeredNicknames = data.nicknames.map((n) => n.toLowerCase());
-
-            // Double check nickname again after refresh
-            if (registeredNicknames.includes(nickname.toLowerCase())) {
-              alert("Ovaj nickname je već zauzet! Odaberi drugi.");
-              nicknameInput.value = "";
-              nicknameInput.focus();
-              return;
-            }
-
-            // All validations passed, proceed to team selection
-            document.querySelector(".container").classList.add("hidden");
-            teamSelect.classList.remove("hidden");
-
-            // Update clubs data
-            usedClubs = data.clubs.map((c) => c.toLowerCase());
-            disableUsedClubs();
-          } else {
-            // If API reports error, proceed with warning
-            const proceed = confirm(
-              "Nije moguće provjeriti dostupnost nadimka. Želite li nastaviti?"
-            );
-            if (proceed) {
-              document.querySelector(".container").classList.add("hidden");
-              teamSelect.classList.remove("hidden");
-            }
-          }
-        })
-        .catch((error) => {
-          console.error("Error refreshing data:", error);
-
-          // Proceed anyway with warning
-          const proceed = confirm(
-            "Nije moguće provjeriti dostupnost nadimka. Želite li nastaviti?"
-          );
-          if (proceed) {
-            document.querySelector(".container").classList.add("hidden");
-            teamSelect.classList.remove("hidden");
-          }
-        });
+      validateAndProceed();
     });
+  }
+
+  function validateAndProceed() {
+    const ime = imeInput.value.trim();
+    const prezime = prezimeInput.value.trim();
+    const nickname = nicknameInput.value.trim();
+    const email = emailInput ? emailInput.value.trim() : "";
+
+    // Form validation with inline errors instead of alerts
+    if (!ime) {
+      showError(imeInput, "Molimo unesite vaše ime.");
+      return;
+    }
+
+    if (!prezime) {
+      showError(prezimeInput, "Molimo unesite vaše prezime.");
+      return;
+    }
+
+    if (!nickname) {
+      showError(nicknameInput, "Molimo unesite vaš nickname.");
+      return;
+    }
+
+    if (emailInput && !email) {
+      showError(emailInput, "Molimo unesite vašu email adresu.");
+      return;
+    }
+
+    if (emailInput && !isValidEmail(email)) {
+      showError(
+        emailInput,
+        "Molimo unesite valjanu email adresu (npr. ime@domena.com)."
+      );
+      return;
+    }
+
+    // Check if nickname is already taken (if we have data)
+    if (dataLoaded && registeredNicknames.includes(nickname.toLowerCase())) {
+      showError(nicknameInput, "Ovaj nickname je već zauzet! Odaberi drugi.");
+      nicknameInput.value = "";
+      return;
+    }
+
+    // Refresh data one more time before proceeding
+    fetch("get_existing_data.php")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.success) {
+          registeredNicknames = data.nicknames.map((n) => n.toLowerCase());
+
+          // Double check nickname again after refresh
+          if (registeredNicknames.includes(nickname.toLowerCase())) {
+            showError(
+              nicknameInput,
+              "Ovaj nickname je već zauzet! Odaberi drugi."
+            );
+            nicknameInput.value = "";
+            return;
+          }
+
+          // All validations passed, proceed to team selection
+          document.querySelector(".container").classList.add("hidden");
+          teamSelect.classList.remove("hidden");
+
+          // Update clubs data
+          usedClubs = data.clubs.map((c) => c.toLowerCase());
+          disableUsedClubs();
+        } else {
+          console.error("Error checking data:", data.message);
+          // Just proceed without showing error
+          document.querySelector(".container").classList.add("hidden");
+          teamSelect.classList.remove("hidden");
+        }
+      })
+      .catch((error) => {
+        console.error("Error refreshing data:", error);
+        // Just proceed without showing error
+        document.querySelector(".container").classList.add("hidden");
+        teamSelect.classList.remove("hidden");
+      });
   }
 
   // ========== CONFIRM TEAM SELECTION ==========
   if (confirmBtn) {
     confirmBtn.addEventListener("click", () => {
       if (!selectedClub) {
-        alert("Odaberi tim prije potvrde.");
+        // Show error message instead of alert
+        let errorMsg = teamSelect.querySelector(".team-error-message");
+        if (!errorMsg) {
+          errorMsg = document.createElement("div");
+          errorMsg.className = "error-message team-error-message";
+          errorMsg.style.margin = "10px 0";
+          teamSelect.insertBefore(errorMsg, confirmBtn);
+        }
+        errorMsg.textContent = "Odaberi tim prije potvrde.";
+        applyShakeEffect(slider.parentElement);
         return;
       }
 
@@ -346,35 +457,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Check if club is already taken after refresh
             if (usedClubs.includes(selectedClub.toLowerCase())) {
-              alert("Ovaj klub je već odabran. Molimo odaberite drugi.");
+              // Show error message instead of alert
+              let errorMsg = teamSelect.querySelector(".team-error-message");
+              if (!errorMsg) {
+                errorMsg = document.createElement("div");
+                errorMsg.className = "error-message team-error-message";
+                errorMsg.style.margin = "10px 0";
+                teamSelect.insertBefore(errorMsg, confirmBtn);
+              }
+              errorMsg.textContent =
+                "Ovaj klub je već odabran. Molimo odaberite drugi.";
+
               selectedClub = "";
               selectedLogo = "";
               teamIcons.forEach((el) => el.classList.remove("selected"));
               disableUsedClubs();
+              applyShakeEffect(slider.parentElement);
               return;
             }
 
             proceedWithSubmission();
           } else {
-            // If data refresh fails, ask user if they want to proceed
-            const proceed = confirm(
-              "Nije moguće provjeriti dostupnost kluba. Želite li nastaviti?"
-            );
-            if (proceed) {
-              proceedWithSubmission();
-            }
+            console.error("Error checking club availability:", data.message);
+            // Just proceed without showing error
+            proceedWithSubmission();
           }
         })
         .catch((error) => {
           console.error("Error refreshing data:", error);
-
-          // Ask user if they want to proceed
-          const proceed = confirm(
-            "Nije moguće provjeriti dostupnost kluba. Želite li nastaviti?"
-          );
-          if (proceed) {
-            proceedWithSubmission();
-          }
+          // Just proceed without showing error
+          proceedWithSubmission();
         });
     });
   }
@@ -426,7 +538,16 @@ document.addEventListener("DOMContentLoaded", () => {
           clearInterval(refreshInterval);
         } else {
           console.error("Server error:", data.message);
-          alert("Greška: " + data.message);
+
+          // Show error message instead of alert
+          let errorMsg = teamSelect.querySelector(".team-error-message");
+          if (!errorMsg) {
+            errorMsg = document.createElement("div");
+            errorMsg.className = "error-message team-error-message";
+            errorMsg.style.margin = "10px 0";
+            teamSelect.insertBefore(errorMsg, confirmBtn);
+          }
+          errorMsg.textContent = "Greška: " + data.message;
 
           // If club was already taken, refresh the UI
           if (data.message.includes("klub") || data.message.includes("već")) {
@@ -437,30 +558,18 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch((error) => {
         console.error("Error during submission:", error);
 
-        // Try to directly show the confirmation screen with a fallback message
-        const proceed = confirm(
-          "Nije moguće povezati se s bazom podataka. Želite li ipak dovršiti registraciju?"
-        );
+        // Just proceed to confirmation screen without showing error
+        teamSelect.classList.add("hidden");
+        confirmation.classList.remove("hidden");
 
-        if (proceed) {
-          teamSelect.classList.add("hidden");
-          confirmation.classList.remove("hidden");
+        confIme.textContent = userData.ime;
+        confPrezime.textContent = userData.prezime;
+        confNick.textContent = userData.nickname;
+        confKlub.textContent = userData.club;
+        confLogo.src = selectedLogo;
 
-          confIme.textContent = userData.ime;
-          confPrezime.textContent = userData.prezime;
-          confNick.textContent = userData.nickname;
-          confKlub.textContent = userData.club;
-          confLogo.src = selectedLogo;
-
-          // Add a message about possible database connection issues
-          const noteElement = document.createElement("p");
-          noteElement.innerHTML =
-            "<strong style='color:red;'>Napomena:</strong> Registracija možda nije spremljena zbog problema s povezivanjem.";
-          confirmation.appendChild(noteElement);
-
-          // Clear interval
-          clearInterval(refreshInterval);
-        }
+        // Clear interval
+        clearInterval(refreshInterval);
       });
   }
 
